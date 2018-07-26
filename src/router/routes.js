@@ -79,6 +79,7 @@ export const appRoutes = [
         name: 'template.index',
         component: () => import('@/views/template/Index.vue'),
       },
+
     ],
   },
 ];

@@ -2,20 +2,20 @@
   <div class="input_tr">
     <!-- <div class="mask" v-show="isRead" @dblclick="canInput">于瘠薄</div> -->
     <textarea
-      @blur="() => readOnly = true"
-      :readonly="readOnly"
-      @dblclick="onDblClick"
-      @input="input"
-      v-model="currentValue"
-      v-if="type === 'textarea'"
+        @blur="onBlur"
+        :readonly="readOnly"
+        @dblclick="onDblClick"
+        @input="input"
+        v-model="currentValue"
+        v-if="type === 'textarea'"
     ></textarea>
     <input
-      v-else
-      @blur="() => readOnly = true"
-      :readonly="readOnly"
-      @dblclick="onDblClick"
-      @input="input"
-      v-model="currentValue"
+            v-else
+            @blur="onBlur"
+            :readonly="readOnly"
+            @dblclick="onDblClick"
+            @input="input"
+            v-model="currentValue"
     />
     <div class="edit_icon">
       <icon type="create" size="16" />
@@ -24,9 +24,9 @@
 </template>
 
 <script>
-import Icon from '@/components/Icon.vue';
+  import Icon from '@/components/Icon.vue';
 
-export default {
+  export default {
   name: 'InputTr',
   components: {
     Icon,
@@ -52,6 +52,10 @@ export default {
     };
   },
   methods: {
+    onBlur() {
+      this.readOnly = true;
+      this.$emit('blur', this.currentValue);
+    },
     onDblClick(e) {
       const len = e.target.value.length;
       e.target.setSelectionRange(len, len);
@@ -59,6 +63,7 @@ export default {
     },
     input() {
       this.$emit('input', this.currentValue);
+
     },
   },
   mounted() {

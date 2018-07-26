@@ -1,28 +1,80 @@
 <script>
-/* eslint-disable no-return-assign */
-/* eslint-disable no-param-reassign */
-import InputTr from './InputTr.vue';
+  /* eslint-disable no-return-assign */
+  /* eslint-disable no-param-reassign */
+  import {createNamespacedHelpers} from 'vuex';
+  import InputTr from './InputTr.vue';
+const { mapActions, mapState } = createNamespacedHelpers('template');
 
 export default{
   name: 'Template',
   components: {
     InputTr,
   },
+  computed: {
+    ...mapState([
+      'currentTemplate',
+    ]),
+  },
+  methods: {
+    ...mapActions([
+      'getTemplate',
+      'updateTemplate',
+    ]),
+  },
+  async created() {
+    await this.getTemplate(this.$route.params.templateId);
+    // 初始化
+    this.currentTemplate.assessmentProjects.forEach((item) => {
+      const opt = [];
+      item.items.forEach((ele) => {
+        opt.push({
+          id: ele.id,
+          title: ele.title,
+          value: ele.score,
+        });
+      });
+      this.proLists.push({
+        id:item.id,
+        name: item.title,
+        options: opt,
+        self_evaluation: '',
+        direct_manager_score: '  ',
+        remarks: '',
+      });
+    });
+    this.currentTemplate.assessmentInputs.forEach((item) => {
+      this.inputList.push({
+        id: item.id,
+        title: item.title,
+        value: '',
+      });
+    });
+  },
   render() {
     const proTrs = this.proLists.map((pro) => {
       const trs = pro.options.slice(1, pro.options.length).map((item, index) => {  // eslint-disable-line
         return (
+
           <tr>
-            <td colspan="5">{item.title}</td>
-            <td class="editable"><InputTr value={ item.value } on-input={ v => item.value = v }/></td>
+            <td colspan="5"><InputTr value={item.title} on-blur={(v) => { this.updateTemplate({value: v,id:item.id,temp: 'project_item' }) } }
+                                     on-input={v => item.title = v}/></td>
+            <td class="editable">
+              <InputTr value={item.value} on-blur={(v) => { this.updateTemplate({value: v,id:item.id,temp: 'score' }) } } on-input={v => item.value = v}/>
+            </td>
           </tr>
         );
       });
+      //temples/template_input/xx
+      //temples/project/xx
       trs.unshift(<tr>
-          <td rowspan={pro.options.length}>{pro.name}</td>
-          <td colspan="5">{pro.options[0].title}</td>
+        <td rowspan={pro.options.length} className="editable">
+          <InputTr type="textarea" value={pro.name} on-blur={(v) => { this.updateTemplate({value: v, id: pro.id,temp: 'project'}) } } on-input={v => pro.name = v}/>
+        </td>
+        <td colspan="5" className="editable">
+          <InputTr value={pro.options[0].title} on-blur={(v) => { this.updateTemplate({value: v, id: pro.options[0].id,temp: 'project_item' }) } } on-input={v => pro.options[0].title = v}/>
+        </td>
           <td class="editable">
-            <InputTr value={pro.options[0].value} on-input={v => pro.options[0].value = v} />
+            <InputTr value={pro.options[0].value} on-blur={(v) => { this.updateTemplate({ value: v, id: pro.options[0].id,temp: 'score' }) } } on-input={v => pro.options[0].value = v} />
           </td>
           <td rowspan={pro.options.length} class="editable">
             <InputTr value={pro.self_evaluation} on-input={v => pro.self_evaluation = v} />
@@ -37,10 +89,12 @@ export default{
       return trs;
     });
     const inputTrs = this.inputList.map((inputItem) => {
-      const titleTds = [<tr><td colspan="10">{inputItem.title}</td></tr>];
+      const titleTds = [<tr>
+        <td colspan="10"><InputTr value={inputItem.title} on-blur={(v) => { this.updateTemplate({ value: v, id: inputItem.id,temp: 'template_input' }) } } on-input={v => inputItem.title = v}/></td>
+      </tr>];
       titleTds.push(<tr colspan="10">
           <td class="editable input_td" colspan="10">
-            <InputTr type="textarea" value={inputItem.value} on-input={v => inputItem.value = v} />
+            <InputTr value={inputItem.value} on-blur={(v) => { this.updateTemplate({ value: v, id: inputItem.id,temp: 'template_input' }); } } on-input={v => inputItem.value = v}/>
           </td>
         </tr>);
       return titleTds;
@@ -90,6 +144,7 @@ export default{
           <tr>
             <td colspan="6">合记</td>
             <td class="editable">
+
               <InputTr value={this.val} on-input={v => this.val = v} />
             </td>
             <td class="editable">
@@ -117,55 +172,11 @@ export default{
   data() {
     return {
       vale: 'ty',
-      proLists: [
-        {
-          name: '(1)基础操守',
-          options: [
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-          ],
-          self_evaluation: '10',
-          direct_manager_score: '10',
-          remarks: '垃圾',
-        },
-        {
-          name: '(1)基础操守',
-          options: [
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-          ],
-          self_evaluation: '10',
-          direct_manager_score: '10',
-          remarks: '垃圾',
-        },
-        {
-          name: '(1)基础操守',
-          options: [
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-            { title: 'A. 非常自觉遵守公司及驻场的各项规章制度，以身作则，起模范带头作用', value: '10' },
-          ],
-          self_evaluation: '10',
-          direct_manager_score: '10',
-          remarks: '垃圾',
-        },
-      ],
-      inputList: [
-        { title: '1．工作总结（包括主要工作内容，计划完成情况、主要成果，个人取得的进步等;', value: '' },
-        { title: '2．你觉得自身工作中还存在哪些问题及改进计划？对公司的工作有何意见和建议', value: '' },
-        { title: '3．你下一个阶段的工作目标和计划', value: '' },
-        { title: '4．直接经理评价和改进建议', value: '' },
-      ],
+      proLists: [],
+      inputList: [],
     };
   },
+
 };
 </script>
 
